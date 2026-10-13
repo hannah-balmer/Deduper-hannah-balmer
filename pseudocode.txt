@@ -1,0 +1,113 @@
+### General Summary of Program ###
+1. In BASH, sort files with samtools sort which by default sorts by left-most coordinate and have it output a SAM file (default is BAM)
+2. In BASH, remove the header @ lines to retain just alignment data
+3. Read in UMIs and load into list 
+4. In order to not overwhelm memory, I will go through the SAM file one chromosome at a time
+    - Open output SAM file for writing
+    - Open input SAM file and read one line at a time with readline() to preserve memory
+    - First check if QNAME UMI matches an UMI in UMI list, move onto next line if not
+    - Compare information from line against collected information about prior non-dup lines (start site, strand, and UMI) stored in strand-specific dictionary 
+    *there will be one dictionary for each strand to avoid value being a list
+        - If duplicate, don't add info to dictionary, don't write to output SAM file, and move to next line
+        - If unique, add necessary information to strand-specific dictionary (start site and UMI) and write line to output SAM file
+    - Once end of chromosome is hit, clear out dictionaries, and resume logic above
+5. Repeat #4 for each chromosome
+
+
+
+## Pseudocode ##
+
+# Functions to write #
+
+decode_cigar(cigar string: str, start site: str) -> int:
+'''takes in cigar string and start site to returns true start site accounting for soft clipping on 5' end'''
+    
+    regular expressions used on cigar string to look for numbers preceding 'S' and then subtract those numbers from start site to get true start site
+
+bit(bitwise flag: str) -> bool: 
+'''returns strandedness via Boolean value based on bitwise flag (True = forward, False = reverse)'''
+    
+    if((flag & 16) != 16):
+        forward = True
+        return forward
+
+uniq_check(bitscore: str, start site: str, cigar string: str) -> bool: 
+'''takes in bitscore, start site, and cigar string to output Boolean value (T for unique read, F for duplicate read)'''
+    
+        # determine true start site to account for soft clipping if any
+        true_start = decode_cigar(pass in cigar string and start site)
+        
+        # unique PCR product in forward strand: start site not found in corresponding dict
+        if bit() == TRUE and true_start not in {f_strand}:  
+            add unique entry to {f_strand}
+            return TRUE
+        
+        # unique PCR product in forward strand: start site found in corresponding dict, but UMIs do not match 
+        elif bit() == TRUE and f_strand[true_start] != f_strand[true_start]:
+            add unique entry to {f_strand}
+            return TRUE
+
+        # unique PCR product in reverse strand: start site not found in corresponding dict
+        elif bit() == FALSE and true_start not in {r_strand}: 
+            add unique entry to {r_strand}
+            return TRUE
+        
+        # unique PCR product in reverse strand: start site found in corresponding dict, but UMIs do not match 
+        elif bit() == FALSE and r_strand[true_start] != r_strand[true_start]:
+            add unique entry to {r_strand}
+            return TRUE
+
+        # all other situations lead to duplicate
+        else: 
+            return FALSE
+
+
+import re # regex
+import argparse # to pass in sam input file name, desired output file name, and UMI file name
+
+# read in UMIs
+with open(UMI file):
+    initiate while true loop and use readline() to go line by line to create list of UMIs
+
+# variables/lists/dicts to create prior to looping through input SAM file
+chrom = 1 # initial value of chromosome to kick off loop (since file will be sorted via samtools sort prior to being passed into this program)
+f_strand = {} # layout: {start site: UMI}
+r_strand = {} # layout: {start site: UMI}
+
+with open (output sam file to write to):
+    with open(input sam file):
+        
+        initiate while loop and use readline() to go through one line at a time:
+            obtain QNAME (col 1), bitwise flag for strandedness (col 2), chromosome (col 3), start site (col 4), and cigar string (col 6) via split()
+            
+            UMI = use regex to isolate UMI from QNAME
+
+            # throw out strands without correct UMIs
+            if UMI not in UMI dict:
+                continue to next iteration
+
+            # chromsome conditional check 
+            if read chromosome matches chrom variable (will be chromosome value obtained from above):
+                
+                if uniq_check() == TRUE:
+                    write line to output SAM file
+                
+                # duplicate found
+                else:
+                    continue
+
+            # different chromosome encountered, start process over
+            else:
+                update chrom variable with new chromsome number
+                clear both strand dictionaries
+
+                if uniq_check():
+                    write line to output SAM file
+
+                # duplicate found
+                else:
+                    continue
+
+end of program, both input and output sam files will close
+
+
