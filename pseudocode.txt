@@ -1,6 +1,8 @@
 ### General Summary of Program ###
 1. In BASH, sort files with samtools sort which by default sorts by left-most coordinate and have it output a SAM file (default is BAM)
-2. In BASH, remove the header @ lines to retain just alignment data
+2. In BASH, remove the header @ lines to retain just alignment data 
+** NEED TO INCLUDE HEADERS IN OUTPUT FILE CANNOT REMOVE **
+
 3. Read in UMIs and load into list 
 4. In order to not overwhelm memory, I will go through the SAM file one chromosome at a time
     - Open output SAM file for writing
@@ -19,10 +21,13 @@
 
 # Functions to write #
 
-decode_cigar(cigar string: str, start site: str) -> int:
-'''takes in cigar string and start site to returns true start site accounting for soft clipping on 5' end'''
+decode_cigar(cigar string: str, start site: str, strand: bool) -> int:
+'''takes in cigar string, start site, and strand (T = forward, F = reverse) to returns true start site accounting for soft clipping on 5' end'''
+    if forward strand: 
+        regular expressions used on cigar string to look for numbers preceding 'S' and then subtract those numbers from start site to get true start site
     
-    regular expressions used on cigar string to look for numbers preceding 'S' and then subtract those numbers from start site to get true start site
+    if reverse strand: 
+
 
 bit(bitwise flag: str) -> bool: 
 '''returns strandedness via Boolean value based on bitwise flag (True = forward, False = reverse)'''
@@ -64,6 +69,10 @@ uniq_check(bitscore: str, start site: str, cigar string: str) -> bool:
 
 import re # regex
 import argparse # to pass in sam input file name, desired output file name, and UMI file name
+    - f : absolute file path to input SAM
+    - o : absolute file path to sorted output SAM file
+    - u : absolute file path to file containing UMIs
+    --help
 
 # read in UMIs
 with open(UMI file):
@@ -110,4 +119,4 @@ with open (output sam file to write to):
 
 end of program, both input and output sam files will close
 
-
+NEED TO OUTPUT: # of lines with wrong UMIs, # of dup reads found, and # of unique reads found AND first duplicate encountered (if any dupes found)
