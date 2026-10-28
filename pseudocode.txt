@@ -1,3 +1,13 @@
+### Overall Purpose of Program ###
+Remove PCR duplicates that occurred during RNA sequencing. PCR duplicates are artifacts that remain after the PCR step in RNA sequencing and affect downstream differential expression analysis. The sequencing output file is aligned prior to identification of the duplicates because it less computationally complex/expensive to remove duplicates from SAM file than FASTQ. The program will require an input of the UMI list text file (newline-separated),the post sequencing alignment SAM file, and the desired name of the output file to write non-duplicate SAM reads to.
+
+PCR duplicates will look like:
+1. Located on same chromosome
+2. Located on same strand
+3. Have the same start position when accounting for soft clipping if done
+4. Have the same unique molecular identifier (UMI) (there are 96 in total for this sequencing run) 
+
+
 ### General Summary of Program ###
 1. In BASH, sort files with samtools sort which by default sorts by left-most coordinate and have it output a SAM file (default is BAM)
 2. In BASH, remove the header @ lines to retain just alignment data 
@@ -43,7 +53,7 @@ uniq_check(bitscore: str, start site: str, cigar string: str) -> bool:
         true_start = decode_cigar(pass in cigar string and start site)
         
         # unique PCR product in forward strand: start site not found in corresponding dict
-        if bit() == TRUE and true_start not in {f_strand}:  
+        if bit() == TRUE (forward strand) and true_start not in {f_strand}:  
             add unique entry to {f_strand}
             return TRUE
         
