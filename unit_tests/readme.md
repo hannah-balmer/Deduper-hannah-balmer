@@ -1,7 +1,13 @@
 ## Key to test file
-_*Line numbers match to input.sam_
 
-_**input_preBASH includes the @ header lines preceding the reads_
+input.sam: input file for deduper script (line numbers mentioned below match this file)
+
+output.sam: intended output for comparison with actual output when testing
+
+test_output.sam: output file from testing deduper script
+
+test.py: script for testing functions with pytest
+
 
 ---
 **Test #1: Reads that have incorrect UMIs (throw away)**
