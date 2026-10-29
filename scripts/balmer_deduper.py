@@ -4,7 +4,7 @@ import re
 import argparse
 
 def get_args():
-    parser = argparse.ArgumentParser(description = "Identify and filter out PCR duplicate reads from a single-end sequencing post-alignment SAM file. Will output a filtered SAM file and a .log file containing metrics on duplicate removal.")
+    parser = argparse.ArgumentParser(description = "Identify and filter out PCR duplicate reads from a single-end sequencing post-alignment SAM file. Will output a filtered SAM file and and print duplicate removal metrics to standard output.")
     parser.add_argument("-u", "--umi", help="Absolute file path to a text file containing UMI sequences newline separated.", type = str)
     parser.add_argument("-f", "--file", help="Absolute path of the single-end sequencing post-alignment SAM file. Must be sorted by chromsome then start site.", type = str)
     parser.add_argument("-o", "--outfile", help="Absolute file path where you would like the duplicate-filtered SAM file to be created.", type = str)
@@ -101,6 +101,7 @@ n_headers = 0 # number of header lines
 unique = 0 # number of unique reads
 dupes = 0 # number of duplicates filtered out
 xUMIs = 0 # number of reads with incorrect UMIs
+reads_chr = 0 # number of reads per chromosome
 
 current_chrom = "1" # current chromosome
 f_strand = set() # will hold all UMI and start site combos in tuple for each unique read found in forward strand 
@@ -147,9 +148,12 @@ with open(out_sam, "w") as osam:
 
                 # to save memeory, clear both strand sets and set chromosome variable to new number value
                 if chrom != current_chrom:
+                    print(f"{current_chrom}\t{reads_chr}\n")
                     f_strand.clear()
                     r_strand.clear()
                     current_chrom = chrom
+                    reads_chr = 0
+                    
 
                 # determine strand
                 strand = bitwise(bit)
@@ -160,6 +164,7 @@ with open(out_sam, "w") as osam:
                 # determine whether unique or duplicate
                 if uniq_check(Tstart, strand, umi):
                     unique += 1
+                    reads_chr += 1
                     osam.write(f"{line}\n")
 
                 else:
